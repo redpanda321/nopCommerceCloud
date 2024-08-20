@@ -1,6 +1,8 @@
 using Consul;
 using Polly;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Connections;
+using RabbitMQ.Client;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,14 @@ builder.Services.AddHttpClient("UserService")
     .AddTransientHttpErrorPolicy(policy => policy.WaitAndRetryAsync(3, _ => TimeSpan.FromMilliseconds(600)))
     .AddTransientHttpErrorPolicy(policy => policy.CircuitBreakerAsync(2, TimeSpan.FromSeconds(30)));
 
+
+
+// Add RabbitMQ producer
+ builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(sp => new ConnectionFactory()
+        {
+            HostName = "localhost",
+            DispatchConsumersAsync = true
+        });
 
 
 // Add services to the container.
